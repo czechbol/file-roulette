@@ -1,0 +1,248 @@
+project_name: "file-roulette"
+#dist: ./out
+before:
+  hooks:
+    - go mod download
+builds:
+  - main: ./main.go
+    id: upx
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -w -s -X "file-roulette/cmd.ProgName={{ .ProjectName }}" -X "file-roulette/cmd.ProgVersion=v{{ .Version }}" -X "file-roulette/cmd.BuildDate={{ .Date }}"
+    goos:
+      - linux
+      - darwin
+      - freebsd
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "5"
+      - "6"
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm64
+    hooks:
+      post:
+        - ./upx.sh -9 "{{ .Path }}"
+  - main: ./main.go
+    id: no-upx
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -w -s -X "file-roulette/cmd.ProgName={{ .ProjectName }}" -X "file-roulette/cmd.ProgVersion=v{{ .Version }}" -X "file-roulette/cmd.BuildDate={{ .Date }}"
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - "386"
+      - amd64
+      - arm64
+      - mips
+      - mipsle
+      - mips64
+      - mips64le
+      - ppc64
+      - ppc64le
+      - riscv64
+      - s390x
+    gomips:
+      - hardfloat
+      - softfloat
+    ignore:
+      - goos: linux
+        goarch: "386"
+      - goos: linux
+        goarch: amd64
+      - goos: linux
+        goarch: arm64
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: amd64
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+    rlcp: true
+dockers:
+  # https://goreleaser.com/customization/docker/
+  - use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-amd64"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-amd64"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-amd64"
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: "386"
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-386"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-386"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-386"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-386"
+    build_flag_templates:
+      - "--platform=linux/386"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-arm64v8"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-arm64v8"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-arm64v8"
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: arm
+    goarm: 6
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv6"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-armv6"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv6"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-armv6"
+    build_flag_templates:
+      - "--platform=linux/arm/v6"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: arm
+    goarm: 7
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv7"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-armv7"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv7"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-armv7"
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: ppc64le
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-ppc64le"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-ppc64le"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-ppc64le"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-ppc64le"
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: riscv64
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-riscv64"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-riscv64"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-riscv64"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-riscv64"
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+  - use: buildx
+    goos: linux
+    goarch: s390x
+    image_templates:
+      - "docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-s390x"
+      - "docker.io/czechbol/{{ .ProjectName }}:latest-s390x"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-s390x"
+      - "ghcr.io/czechbol/{{ .ProjectName }}:latest-s390x"
+    build_flag_templates:
+      - "--platform=linux/arm/v7"
+      - "--label=org.opencontainers.image.created={{.Date}}"
+      - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
+docker_manifests:
+  # https://goreleaser.com/customization/docker_manifest/
+  - name_template: ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}
+    image_templates:
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-amd64
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-386
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-arm64v8
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv6
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv7
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-ppc64le
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-riscv64
+      - ghcr.io/czechbol/{{ .ProjectName }}:{{ .Version }}-s390x
+  - name_template: ghcr.io/czechbol/{{ .ProjectName }}:latest
+    image_templates:
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-amd64
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-386
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-arm64v8
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-armv6
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-armv7
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-ppc64le
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-riscv64
+      - ghcr.io/czechbol/{{ .ProjectName }}:latest-s390x
+  - name_template: docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}
+    image_templates:
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-amd64
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-386
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-arm64v8
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv6
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-armv7
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-ppc64le
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-riscv64
+      - docker.io/czechbol/{{ .ProjectName }}:{{ .Version }}-s390x
+  - name_template: docker.io/czechbol/{{ .ProjectName }}:latest
+    image_templates:
+      - docker.io/czechbol/{{ .ProjectName }}:latest-amd64
+      - docker.io/czechbol/{{ .ProjectName }}:latest-386
+      - docker.io/czechbol/{{ .ProjectName }}:latest-arm64v8
+      - docker.io/czechbol/{{ .ProjectName }}:latest-armv6
+      - docker.io/czechbol/{{ .ProjectName }}:latest-armv7
+      - docker.io/czechbol/{{ .ProjectName }}:latest-ppc64le
+      - docker.io/czechbol/{{ .ProjectName }}:latest-riscv64
+      - docker.io/czechbol/{{ .ProjectName }}:latest-s390x
+checksum:
+  name_template: "checksums.txt"
+changelog:
+  skip: false
+  sort: asc
+release:
+  github:
+    owner: czechbol
+    name: file-roulette
+  disable: false
